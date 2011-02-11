@@ -3,6 +3,18 @@ h1. Wicked!
 wicked.js is a module manager. It allows to load external scripts that contain one 
 function and allow to chache its code using localStorage for faster future loading.
 
+h2. Example
+
+Given your script wants to load a function "test()" which is located at "http://example.com/test.js",
+you can use the following code:
+
+mg = new Wicked;
+mg.get('test','http://example.com/test.js',function(mod){
+  alert('test() has been loaded');
+});
+
+The "mod" parameter is the "test()" function which can be now executed.
+
 h2. Requirements
 
 * localStorage
