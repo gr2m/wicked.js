@@ -1,0 +1,9 @@
+h1. Wicked!
+
+wicked.js is a module manager. It allows to load external scripts that contain one 
+function and allow to chache its code using localStorage for faster future loading.
+
+h2. Requirements
+
+* localStorage
+  This is pretty much supported by all modern browers + IE8.
