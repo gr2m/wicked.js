@@ -20,8 +20,8 @@ Wicked = (function(window, document, Store) {
       }
       
       // function present but not a module yet
-      if (typeof window[module] == 'function') {
-        modules[module] = window[module];
+      if (typeof find_function(module) == 'function') {
+        modules[module] = find_function(module);
         return;
       }
 
@@ -30,7 +30,7 @@ Wicked = (function(window, document, Store) {
       if (code = read_from_cache(module)) {
         console.log(module, 'not present but cached');
         eval_module(module, code);
-        callback(window[module]);
+        callback(find_function(module));
         return;
       }
 
@@ -40,14 +40,14 @@ Wicked = (function(window, document, Store) {
           return false;
         }
 
-        if (! window[module]) {
+        if (! find_function(module)) {
           alert('LOAD ERROR: There is no method '+module+' at ' + url);
           return false;
         }
-        code = window[module].toString();
+        code = find_function(module).toString();
         write_to_cache(module, code);
         eval_module(module, code);
-        callback(window[module]);
+        callback(find_function(module));
       });
     };
     
@@ -58,12 +58,12 @@ Wicked = (function(window, document, Store) {
           return false;
         }
     
-        if (! window[module]) {
+        if (! find_function(module)) {
           alert('CHECK ERROR: There is no method '+module+' at ' + url);
           return false;
         }
         
-        var their_code = window[module].toString(),
+        var their_code = find_function(module).toString(),
             my_code    = modules[module] && modules[module].toString();
         
         if (crc32( their_code, salt ) == crc32( my_code || '', salt )) {
@@ -125,7 +125,16 @@ Wicked = (function(window, document, Store) {
     };
     
     var eval_module = function(module, code) {
-      eval('modules.'+module+' = ' + code);
+      eval('modules["'+module+'"] = ' + code);
+    };
+    
+    var find_function = function(name) {
+      var path = name.split('.'),
+          f = window;
+      for (var i=0; i < path.length; i++) {
+        f = f[path[i]];
+      };
+      return f;
     };
 
     /*

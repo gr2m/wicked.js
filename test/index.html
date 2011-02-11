@@ -14,20 +14,20 @@
   <script src='../wicked.js'></script>
   <script type="text/javascript">
     start = new Date().getTime();
-    mg = new Wicked({namespace: 'funk', salt: '1234'});
-    // mg.flush();
-    mg.get('this_is_a_test_function','test.js',function(mod){
+    wicked = new Wicked({namespace: 'funk', salt: '1234'});
+    // wicked.flush();
+    wicked.get('wicked.test','test.js',function(mod){
       end = new Date().getTime();
       time = end - start;
       alert('Execution time: ' + time);
     });
     
     // now change the function in test.js and execute this code.
-    mg.check('this_is_a_test_function','test.js', function(updated, code) {
+    wicked.check('wicked.test','test.js', function(updated, code) {
       if (updated) {
-        alert('this_is_a_test_function has been updated at test.js');
+        alert('wicked.test has been updated at test.js');
       } else {
-        alert('this_is_a_test_function has NOT been updated at test.js');
+        alert('wicked.test has NOT been updated at test.js');
       }
     });
   </script>
