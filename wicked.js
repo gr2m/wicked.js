@@ -102,6 +102,12 @@ Wicked = function(cfg) {
     // get module's source URL
     var url = Store[ [namespace, module, 'url'].join('_') ];
     
+    // avoid errors in case the module is unknown or localStorage has been cleared meanwhile
+    if (!url) {
+      callback(false);
+      return false;
+    }
+    
     // load the script
     load(url, function(event) {
       
