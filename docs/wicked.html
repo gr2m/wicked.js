@@ -249,6 +249,21 @@ and to allow checks for updates.</p></li>
         <div class="octowrap">
           <a class="octothorpe" href="#section-15">#</a>
         </div>
+        <p> avoid errors in case the module is unknown or localStorage has been cleared meanwhile</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">callback</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+      <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+    <span class="p">}</span>
+    </pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="octowrap">
+          <a class="octothorpe" href="#section-16">#</a>
+        </div>
         <p> load the script</p>
       </td>
       <td class=code>
@@ -256,10 +271,10 @@ and to allow checks for updates.</p></li>
       </pre></div>
       </td>
     </tr>
-    <tr id='section-16'>
+    <tr id='section-17'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-16">#</a>
+          <a class="octothorpe" href="#section-17">#</a>
         </div>
         <p> Did something went wrong?</p>
       </td>
@@ -271,10 +286,10 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-17'>
+    <tr id='section-18'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-17">#</a>
+          <a class="octothorpe" href="#section-18">#</a>
         </div>
         <p> Or does the function »module« not exist at »url«?</p>
       </td>
@@ -286,10 +301,10 @@ and to allow checks for updates.</p></li>
       </pre></div>
       </td>
     </tr>
-    <tr id='section-18'>
+    <tr id='section-19'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-18">#</a>
+          <a class="octothorpe" href="#section-19">#</a>
         </div>
         <p> Wicked! Get the code of the module to calculate its checksum.</p>
       </td>
@@ -298,10 +313,10 @@ and to allow checks for updates.</p></li>
       </pre></div>
       </td>
     </tr>
-    <tr id='section-19'>
+    <tr id='section-20'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-19">#</a>
+          <a class="octothorpe" href="#section-20">#</a>
         </div>
         <p> did it change?</p>
       </td>
@@ -310,10 +325,10 @@ and to allow checks for updates.</p></li>
         </pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-21'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-20">#</a>
+          <a class="octothorpe" href="#section-21">#</a>
         </div>
         <p> no? Then return nothing.</p>
       </td>
@@ -323,10 +338,10 @@ and to allow checks for updates.</p></li>
         </pre></div>
       </td>
     </tr>
-    <tr id='section-21'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-21">#</a>
+          <a class="octothorpe" href="#section-22">#</a>
         </div>
         <p> Oh yes? Then return all that&rsquo;s necessary to update it.</p>
       </td>
@@ -338,12 +353,13 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-22'>
+    <tr id='section-23'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-22">#</a>
+          <a class="octothorpe" href="#section-23">#</a>
         </div>
-        <p> make the wicked.check and update the module if it changed</p>
+        <p> make the wicked.check and update the module if it changed.<br/>
+ Updates take effect after the next page load.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="k">this</span><span class="p">.</span><span class="nx">update</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
@@ -355,10 +371,10 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-24'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-23">#</a>
+          <a class="octothorpe" href="#section-24">#</a>
         </div>
         <p> walk through all cached modules and make the wicked.check to find out if they have changed.
  return a callback that just needs to be run for an update</p>
@@ -389,12 +405,13 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-24'>
+    <tr id='section-25'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-24">#</a>
+          <a class="octothorpe" href="#section-25">#</a>
         </div>
-        <p> walk through all cached modules, make the wicked.check and update the ones that have changed</p>
+        <p> walk through all cached modules, make the wicked.check and update the ones that have changed<br/>
+ Updates take effect after the next page load.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="k">this</span><span class="p">.</span><span class="nx">update_all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
@@ -405,10 +422,10 @@ and to allow checks for updates.</p></li>
   <span class="p">};</span></pre></div>
       </td>
     </tr>
-    <tr id='section-25'>
+    <tr id='section-26'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-25">#</a>
+          <a class="octothorpe" href="#section-26">#</a>
         </div>
         <p> spring cleaning!</p>
       </td>
@@ -426,10 +443,10 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-26'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-26">#</a>
+          <a class="octothorpe" href="#section-27">#</a>
         </div>
         <h3>PRIVATE</h3>
       </td>
@@ -437,10 +454,10 @@ and to allow checks for updates.</p></li>
         <div class='highlight'><pre>  </pre></div>
       </td>
     </tr>
-    <tr id='section-27'>
+    <tr id='section-28'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-27">#</a>
+          <a class="octothorpe" href="#section-28">#</a>
         </div>
         <p> Adds a script tag to load the external Javascript and run the callback as soon as it&rsquo;s loaded
  or in case of an error. It&rsquo;s also smart enough not to add the same JavaScript twice if gets
@@ -467,10 +484,10 @@ and to allow checks for updates.</p></li>
   <span class="p">};</span></pre></div>
       </td>
     </tr>
-    <tr id='section-28'>
+    <tr id='section-29'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-28">#</a>
+          <a class="octothorpe" href="#section-29">#</a>
         </div>
         <p> try to read the Module from cache. Returns false if the Module is not cached or if a
  bad guy triet to manipulate it.</p>
@@ -483,10 +500,10 @@ and to allow checks for updates.</p></li>
     </pre></div>
       </td>
     </tr>
-    <tr id='section-29'>
+    <tr id='section-30'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-29">#</a>
+          <a class="octothorpe" href="#section-30">#</a>
         </div>
         <p> already cached?</p>
       </td>
@@ -495,10 +512,10 @@ and to allow checks for updates.</p></li>
     </pre></div>
       </td>
     </tr>
-    <tr id='section-30'>
+    <tr id='section-31'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-30">#</a>
+          <a class="octothorpe" href="#section-31">#</a>
         </div>
         <p> did someone touch it?</p>
       </td>
@@ -506,10 +523,10 @@ and to allow checks for updates.</p></li>
         <div class='highlight'><pre>    <span class="k">if</span> <span class="p">(</span><span class="nx">crc32</span><span class="p">(</span> <span class="nx">Store</span><span class="p">[</span><span class="nx">key</span><span class="p">],</span> <span class="nx">salt</span><span class="p">)</span> <span class="o">!=</span> <span class="nx">Store</span><span class="p">[</span><span class="nx">crc32_key</span><span class="p">])</span> <span class="k">return</span> <span class="kc">false</span><span class="p">;</span></pre></div>
       </td>
     </tr>
-    <tr id='section-31'>
+    <tr id='section-32'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-31">#</a>
+          <a class="octothorpe" href="#section-32">#</a>
         </div>
         <p> wicked, return the Module Code from local Cache.</p>
       </td>
@@ -518,10 +535,10 @@ and to allow checks for updates.</p></li>
   <span class="p">};</span></pre></div>
       </td>
     </tr>
-    <tr id='section-32'>
+    <tr id='section-33'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-32">#</a>
+          <a class="octothorpe" href="#section-33">#</a>
         </div>
         <p> cache a Module in the locally. Besides the Module&rsquo;s code do also save
  its url for update checks and a checksum for security reasons.</p>
@@ -541,10 +558,10 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-33'>
+    <tr id='section-34'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-33">#</a>
+          <a class="octothorpe" href="#section-34">#</a>
         </div>
         <p> Eval is eval. But we use it only for our code and make sure that it&rsquo;s not manipulated.</p>
       </td>
@@ -555,10 +572,10 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-34'>
+    <tr id='section-35'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-34">#</a>
+          <a class="octothorpe" href="#section-35">#</a>
         </div>
         <p> Search for a function by its name, it can be namespaced as well, e.g.</p>
 
@@ -571,10 +588,10 @@ and to allow checks for updates.</p></li>
     </pre></div>
       </td>
     </tr>
-    <tr id='section-35'>
+    <tr id='section-36'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-35">#</a>
+          <a class="octothorpe" href="#section-36">#</a>
         </div>
         <p> start with the window and then walkdown the namespaces if any</p>
       </td>
@@ -588,10 +605,10 @@ and to allow checks for updates.</p></li>
   </pre></div>
       </td>
     </tr>
-    <tr id='section-36'>
+    <tr id='section-37'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-36">#</a>
+          <a class="octothorpe" href="#section-37">#</a>
         </div>
         <p> collect all the wicked garbage we left in local Storage</p>
       </td>
@@ -607,10 +624,10 @@ and to allow checks for updates.</p></li>
   <span class="p">};</span></pre></div>
       </td>
     </tr>
-    <tr id='section-37'>
+    <tr id='section-38'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-37">#</a>
+          <a class="octothorpe" href="#section-38">#</a>
         </div>
         <h3>Crc32 &copy; 2006 Andrea Ercolino, MIT licensed</h3>
       </td>
@@ -618,10 +635,10 @@ and to allow checks for updates.</p></li>
         <div class='highlight'><pre>  </pre></div>
       </td>
     </tr>
-    <tr id='section-38'>
+    <tr id='section-39'>
       <td class=docs>
         <div class="octowrap">
-          <a class="octothorpe" href="#section-38">#</a>
+          <a class="octothorpe" href="#section-39">#</a>
         </div>
         <p> I bow down in front of this piece of code.</p>
 

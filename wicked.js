@@ -144,7 +144,7 @@ Wicked = function(cfg) {
   this.update = function(module, callback) {
     this.check(module, function(changed, module, url, code) {
       if (changed) write_to_cache(module, url, code);
-      callback(changed);
+      if (typeof callback == 'function') callback(changed);
     });
   };
   
@@ -178,7 +178,7 @@ Wicked = function(cfg) {
   this.update_all = function(callback) {
     this.check_all(function(changed, do_update) {
       if (changed) do_update();
-      callback(changed);
+      if (typeof callback == 'function') callback(changed);
     });
   };
 
