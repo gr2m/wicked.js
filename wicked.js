@@ -19,23 +19,26 @@ Wicked = function(cfg) {
       callback(modules[module]);
       return;
     }
-    
-    // is function present?
-    if (typeof find_function(module) == 'function') {
-      // GreaseMonkey fix.
-      if (unsafeWindow) {
-        eval('modules[module] = '+find_function(module).toString());
-      } else {
-        modules[module] = find_function(module);
-      }
-      callback(modules[module]);
-      return;
-    }
 
     // module is cached
     var code;
     if (code = read_from_cache(module)) {
       eval_module(module, code);
+      callback(modules[module]);
+      return;
+    }
+    
+    // is function present?
+    if (typeof find_function(module) == 'function') {
+      code = find_function(module).toString();
+      
+      // GreaseMonkey fix.
+      if (typeof unsafeWindow == 'undefined') {
+        modules[module] = find_function(module);
+      } else {
+        eval_module(module, code);
+      }
+      write_to_cache(module, url, code);
       callback(modules[module]);
       return;
     }
@@ -51,13 +54,15 @@ Wicked = function(cfg) {
         return false;
       }
       code = find_function(module).toString();
-      write_to_cache(module, code);
+      write_to_cache(module, url, code);
       eval_module(module, code);
       callback(modules[module]);
     });
   };
   
-  this.check = function(module, url, callback) {
+  this.check = function(module, callback) {
+    var url = Store[ [namespace, module, 'url'].join('_') ];
+    
     load(url, function(event) {
       if (! event.target) {
         alert('CHECK ERROR: could not check for update at ' + url);
@@ -72,35 +77,36 @@ Wicked = function(cfg) {
       var their_code = find_function(module).toString(),
           my_code    = modules[module] && modules[module].toString();
       
-      if (crc32( their_code, salt ) == crc32( my_code || '', salt )) {
+      if (crc32( their_code, salt ) == Store[ [namespace, module, 'crc'].join('_') ]) {
         callback(false);
       } else {
-        callback(true, their_code);
+        callback(true, module, url, their_code);
       };
     });
   };
   
-  this.check_all = function(module, url, callback) {
-    load(url, function(event) {
-      if (! event.target) {
-        alert('CHECK ERROR: could not check for update at ' + url);
-        return false;
-      }
-  
-      if (! find_function(module)) {
-        alert('CHECK ERROR: There is no method '+module+' at ' + url);
-        return false;
-      }
-      
-      var their_code = find_function(module).toString(),
-          my_code    = modules[module] && modules[module].toString();
-      
-      if (crc32( their_code, salt ) == crc32( my_code || '', salt )) {
-        callback(false);
-      } else {
-        callback(true, their_code);
-      };
-    });
+  this.check_all = function(callback) {
+    var queue   = 0,
+        changed = [];
+    for(var module in modules) {
+      queue++;
+      this.check(module, function(has_changed, module, url, code) {
+        queue--;
+        if (has_changed) {
+          changed.push({module: module, url: url, code: code});
+          write_to_cache(module, url, code);
+        }
+        if (queue == 0) {
+          callback(changed.length > 0, function(callback) {
+            for (var i=0; i < changed.length; i++) {
+              console.log('Updating cache for', changed[i].module, changed[i].url);
+              write_to_cache(changed[i].module, changed[i].url, changed[i].code);
+              if (typeof callback == 'function') callback();
+            }; 
+          });
+        }
+      });
+    }
   };
 
   this.flush = function(key) {
@@ -108,16 +114,13 @@ Wicked = function(cfg) {
       Store.removeItem([namespace,key].join('_'));
       Store.removeItem([namespace,key,'crc'].join('_'));
     } else {
-      var remove_keys = [];
-      for (var i = 0, key; i < Store.length; i++){
-        key = Store.key(i);
-        if (RegExp('^'+namespace).test(key)) remove_keys.push(key);
-      }
-      for (var i=0; i < remove_keys.length; i++) {
-        Store.removeItem(remove_keys[i]);
+      for (var i=0; i < my_keys().length; i++) {
+        Store.removeItem(my_keys(i));
       };
     }
   };
+  
+  
   
   // PRIVATE
   // ======================================================================
@@ -127,11 +130,13 @@ Wicked = function(cfg) {
       
       var script = document.createElement('script');
       script.src = url + '?' + Math.random();
+      script.className = namespace;
       script.onload = script.onerror = function(event) {
         var callback;
         while ( callback = load_queues[url].shift() ) {
           callback(event); 
         }
+        delete load_queues[url];
       };
       document.body.appendChild(script);
     }
@@ -145,18 +150,19 @@ Wicked = function(cfg) {
     
     // not cached yet
     if (! Store[key] || !Store[crc32_key]) return false;
-
-    // cached but potentially manipulated
+    
     if (crc32( Store[key], salt) != Store[crc32_key]) return false;
 
     return Store[key];
   };
 
-  var write_to_cache = function(module, data) {
+  var write_to_cache = function(module, url, data) {
     var key       = [namespace, module].join('_'),
+        url_key   = [key, 'url'].join('_');
         crc32_key = [key, 'crc'].join('_');
 
     Store[key]        = data;
+    Store[url_key]    = url;
     Store[crc32_key]  = crc32( data, salt);
 
     return true;
@@ -176,6 +182,16 @@ Wicked = function(cfg) {
     
     return window[name];
   };
+  
+  var my_keys = function(nr) {
+    var keys = [];
+    for (var i = 0, key; i < Store.length; i++){
+      key = Store.key(i);
+      if (RegExp('^'+namespace).test(key)) keys.push(key);
+    }
+    my_keys = function(nr) { return nr ? keys[nr] : keys; };
+    return nr ? keys[nr] : keys;
+  };
 
   /*
   ===============================================================================
@@ -194,6 +210,10 @@ Wicked = function(cfg) {
 
   	/* Number */
   	return function( str, crc ) {
+  	  if(typeof str.charCodeAt != 'function') {
+  	    console.log(str, str.toString());
+  	  }
+  	  
   		if( crc == window.undefined ) crc = 0;
   		var n = 0; //a number between 0 and 255
   		var x = 0; //an hex number
