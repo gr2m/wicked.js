@@ -1,26 +1,51 @@
+// wicked.js is a module manager for Javascript. It loads external JavaScript functions (Modules)
+// across domains and caches its code using localStorage for faster future loading.ng.
+// 
+// The script used to inject miteGyver is wicked.js which is used to load, cache & update
+// miteGyver and also used by miteGyver itself to load assets as needed by the current website.
+// 
+//### Example Usage
+// 
+//     wicked = new Wicked;
+//     wicked.get("myWickedFunction","http://example.com/my_wicked_function.js", function(myWickedFunction){
+//       var instance = new myWickedFunction({foo: 'bar'});
+//       instance.showSomethingWicked();
+//     })
+//    
+//### Parameters
+// 
+// * **namespace** (optional, default: 'wicked')
+//   namespace is prepended to all localStorage keys used for caching.
+// 
+// * **salt** (optional, default: Math.random())
+//   crc32 checksums are stored among with the Modules in order to avoid manipulation
+//   and to allow checks for updates.
+
 Wicked = function(cfg) {
   cfg = cfg || {};
-  var namespace   = cfg.namespace || 'wicked',
-      salt        = cfg.salt      || 'ontaouywftnauwoftkrst',
+  var namespace   = cfg.namespace   || 'wicked',
+      salt        = String(cfg.salt || Math.random()),
       modules     = {},
-      Store       = localStorage,
+      Store       = window.localStorage,
       load_queues = {};
   
-  // localStorage supported?
+  // localStorage support is required
   if (typeof Store == 'undefined') {
     alert('wicked.js Error: Your Browser does not support localStorage.');
     return;
   }
   
+  // load & cache a JS function called »module« located at »url« and
+  // run callback passing the module as soon as it is available.
   this.get = function(module, url, callback) {
 
-    // is module already present?
+    // is the module already loaded? Sweet, that was fast.
     if (typeof modules[module] == 'function') {
       callback(modules[module]);
       return;
     }
 
-    // module is cached
+    // Is module already cached? Wicked! check it's checksum and return it.
     var code;
     if (code = read_from_cache(module)) {
       eval_module(module, code);
@@ -28,31 +53,40 @@ Wicked = function(cfg) {
       return;
     }
     
-    // is function present?
+    // Is the desired Module already present? Not bad!
+    // Let's return it right away & cache it for the future
     if (typeof find_function(module) == 'function') {
       code = find_function(module).toString();
       
-      // GreaseMonkey fix.
-      if (typeof unsafeWindow == 'undefined') {
-        modules[module] = find_function(module);
-      } else {
-        eval_module(module, code);
-      }
+      // **NOTE**  
+      // Due to a Greasemonkey issue I couldn't figure out yet,
+      // it's not possible to simply use:
+      // 
+      //    modules[module] = find_function(module);
+      
+      // save Module, cache its code and run callback
+      eval_module(module, code);
       write_to_cache(module, url, code);
       callback(modules[module]);
       return;
     }
 
+    // Okay, this module is new, so let's load it.
     load(url, function(event) {
+      
+      // Did something went wrong?
       if (! event.target) {
         alert('LOAD ERROR: could not load ' + url);
         return false;
       }
 
+      // Or does the function »module« not exist at »url«?
       if (! find_function(module)) {
         alert('LOAD ERROR: There is no method '+module+' at ' + url);
         return false;
       }
+      
+      // Okay, all good. Let's return the module and cache its code for future usage.
       code = find_function(module).toString();
       write_to_cache(module, url, code);
       eval_module(module, code);
@@ -60,31 +94,55 @@ Wicked = function(cfg) {
     });
   };
   
+  // The wicked.check allows us to reload a module and compare its checksum with the one
+  // we have stored locally. In case the module has been updated, return all that's necessary
+  // to update it.
   this.check = function(module, callback) {
+    
+    // get module's source URL
     var url = Store[ [namespace, module, 'url'].join('_') ];
     
+    // load the script
     load(url, function(event) {
+      
+      // Did something went wrong?
       if (! event.target) {
         alert('CHECK ERROR: could not check for update at ' + url);
         return false;
       }
   
+      // Or does the function »module« not exist at »url«?
       if (! find_function(module)) {
         alert('CHECK ERROR: There is no method '+module+' at ' + url);
         return false;
       }
       
-      var their_code = find_function(module).toString(),
-          my_code    = modules[module] && modules[module].toString();
+      // Wicked! Get the code of the module to calculate its checksum.
+      var their_code = find_function(module).toString();
       
+      // did it change?
       if (crc32( their_code, salt ) == Store[ [namespace, module, 'crc'].join('_') ]) {
+        
+        // no? Then return nothing.
         callback(false);
       } else {
+        
+        // Oh yes? Then return all that's necessary to update it.
         callback(true, module, url, their_code);
       };
     });
   };
   
+  // make the wicked.check and update the module if it changed
+  this.update = function(module, callback) {
+    this.check(module, function(changed, module, url, code) {
+      if (changed) write_to_cache(module, url, code);
+      callback(changed);
+    });
+  };
+  
+  // walk through all cached modules and make the wicked.check to find out if they have changed.
+  // return a callback that just needs to be run for an update
   this.check_all = function(callback) {
     var queue   = 0,
         changed = [];
@@ -99,7 +157,6 @@ Wicked = function(cfg) {
         if (queue == 0) {
           callback(changed.length > 0, function(callback) {
             for (var i=0; i < changed.length; i++) {
-              console.log('Updating cache for', changed[i].module, changed[i].url);
               write_to_cache(changed[i].module, changed[i].url, changed[i].code);
               if (typeof callback == 'function') callback();
             }; 
@@ -108,7 +165,16 @@ Wicked = function(cfg) {
       });
     }
   };
+  
+  // walk through all cached modules, make the wicked.check and update the ones that have changed
+  this.update_all = function(callback) {
+    this.check_all(function(changed, do_update) {
+      if (changed) do_update();
+      callback(changed);
+    });
+  };
 
+  // spring cleaning!
   this.flush = function(key) {
     if (key) {
       Store.removeItem([namespace,key].join('_'));
@@ -120,10 +186,11 @@ Wicked = function(cfg) {
     }
   };
   
+  //### PRIVATE
   
-  
-  // PRIVATE
-  // ======================================================================
+  // Adds a script tag to load the external Javascript and run the callback as soon as it's loaded
+  // or in case of an error. It's also smart enough not to add the same JavaScript twice if gets
+  // loaded multiple times while the JavaScript is still transfered asynchronously.
   var load = function(url, callback) {
     if (! load_queues[url]) {
       load_queues[url] = [];
@@ -143,19 +210,25 @@ Wicked = function(cfg) {
     load_queues[url].push(callback);
   };
 
+  // try to read the Module from cache. Returns false if the Module is not cached or if a
+  // bad guy triet to manipulate it.
   var read_from_cache = function(module) {
 
     var key       = [namespace, module].join('_'),
         crc32_key = [key, 'crc'].join('_');
     
-    // not cached yet
+    // already cached?
     if (! Store[key] || !Store[crc32_key]) return false;
     
+    // did someone touch it?
     if (crc32( Store[key], salt) != Store[crc32_key]) return false;
 
+    // wicked, return the Module Code from local Cache.
     return Store[key];
   };
 
+  // cache a Module in the locally. Besides the Module's code do also save
+  // its url for update checks and a checksum for security reasons.
   var write_to_cache = function(module, url, data) {
     var key       = [namespace, module].join('_'),
         url_key   = [key, 'url'].join('_');
@@ -168,14 +241,19 @@ Wicked = function(cfg) {
     return true;
   };
   
+  // Eval is eval. But we use it only for our code and make sure that it's not manipulated. 
   var eval_module = function(module, code) {
     eval('modules["'+module+'"] = ' + code);
   };
   
+  // Search for a function by its name, it can be namespaced as well, e.g.
+  // 
+  // var my.funky.module = function() { alert('Wicked!')}
   var find_function = function(name) {
     var path = name.split('.'),
         f = window;
     
+    // start with the window and then walkdown the namespaces if any
     for (var i=0; i < path.length; i++) {
       f = f[path[i]];
     };
@@ -183,6 +261,7 @@ Wicked = function(cfg) {
     return window[name];
   };
   
+  // collect all the wicked garbage we left in local Storage
   var my_keys = function(nr) {
     var keys = [];
     for (var i = 0, key; i < Store.length; i++){
@@ -192,6 +271,10 @@ Wicked = function(cfg) {
     my_keys = function(nr) { return nr ? keys[nr] : keys; };
     return nr ? keys[nr] : keys;
   };
+
+  //###Crc32 (c) 2006 Andrea Ercolino, MIT licensed
+  
+  // I bow down in front of this piece of code. 
 
   /*
   ===============================================================================
@@ -210,10 +293,6 @@ Wicked = function(cfg) {
 
   	/* Number */
   	return function( str, crc ) {
-  	  if(typeof str.charCodeAt != 'function') {
-  	    console.log(str, str.toString());
-  	  }
-  	  
   		if( crc == window.undefined ) crc = 0;
   		var n = 0; //a number between 0 and 255
   		var x = 0; //an hex number
