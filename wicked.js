@@ -133,7 +133,8 @@ Wicked = function(cfg) {
     });
   };
   
-  // make the wicked.check and update the module if it changed
+  // make the wicked.check and update the module if it changed.  
+  // Updates take effect after the next page load.
   this.update = function(module, callback) {
     this.check(module, function(changed, module, url, code) {
       if (changed) write_to_cache(module, url, code);
@@ -166,7 +167,8 @@ Wicked = function(cfg) {
     }
   };
   
-  // walk through all cached modules, make the wicked.check and update the ones that have changed
+  // walk through all cached modules, make the wicked.check and update the ones that have changed  
+  // Updates take effect after the next page load.
   this.update_all = function(callback) {
     this.check_all(function(changed, do_update) {
       if (changed) do_update();
