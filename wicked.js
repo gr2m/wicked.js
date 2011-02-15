@@ -259,14 +259,14 @@ Wicked = function(cfg) {
   // var my.funky.module = function() { alert('Wicked!')}
   var find_function = function(name) {
     var path = name.split('.'),
-        f = window;
+        f = window; 
     
     // start with the window and then walkdown the namespaces if any
     for (var i=0; i < path.length; i++) {
       f = f[path[i]];
     };
     
-    return window[name];
+    return f;
   };
   
   // collect all the wicked garbage we left in local Storage
