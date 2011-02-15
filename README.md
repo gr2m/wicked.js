@@ -6,16 +6,9 @@ across domains and caches its code using localStorage for faster future loading.
 ### Example Usage
 
     wicked = new Wicked;
-    wicked.get("MiteGyver","http://example.com/mite.gyver.js", function(MiteGyver){
-      var miteGyver = new MiteGyver(  {
-        home: 'http://example.com/mite.gyver', 
-        mite: {
-          account: 'example',
-          api_key: '1234567890ABCDEF'
-        },
-        wicked: new Wicked
-      });
-      miteGyver.boot();
+    wicked.get("myWickedFunction","http://example.com/my_wicked_function.js", function(myWickedFunction){
+      var instance = new myWickedFunction({foo: 'bar'});
+      instance.showSomethingWicked();
     })
    
 ### Parameters
