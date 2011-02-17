@@ -47,12 +47,6 @@ Wicked = function(cfg) {
       // but give it 5 sec before the first check
       window.setTimeout(self.check_for_updates, 5000);
     }
-    // 
-    // modules['Wicked'] = Wicked;
-    // code = Wicked.toString();
-    // Store[ [namespace, module].join('_') ] = code;
-    // Store[ [namespace, module, 'crc'].join('_') ] = crc32( code, salt );
-    // Store[ [namespace, module, 'url'].join('_') ] = 
   };
   
   // load & cache a JS function called »module« located at »url« and
@@ -204,7 +198,6 @@ Wicked = function(cfg) {
   
   // Check each check_interval for new updates. If there are updated files, do the update immediately. 
   this.check_for_updates = function() {
-    
     var now       = function() { return (new Date).getTime(); },
         store_key = [namespace, 'last_check'].join('_'),
         _check = function() {
