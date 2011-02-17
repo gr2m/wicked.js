@@ -237,7 +237,7 @@ Wicked = function(cfg) {
 
   // spring cleaning!
   this.flush = function(module) {
-    if (key) {
+    if (module) {
       Store.removeItem([namespace,module].join('_'));
       Store.removeItem([namespace,module,'crc'].join('_'));
       Store.removeItem([namespace,module,'url'].join('_'));
