@@ -20,20 +20,40 @@
 // * **salt** (optional, default: Math.random())
 //   crc32 checksums are stored among with the Modules in order to avoid manipulation
 //   and to allow checks for updates.
+// 
+// * **check_interval** in seconds (optional, default: 3600)
+//   if check_interval is set, modules get updated automatically in background
 
 Wicked = function(cfg) {
   cfg = cfg || {};
-  var namespace   = cfg.namespace   || 'wicked',
-      salt        = String(cfg.salt || Math.random()),
-      modules     = {},
-      Store       = window.localStorage,
-      load_queues = {};
+  var namespace      = cfg.namespace   || 'wicked',
+      salt           = String(cfg.salt || Math.random()),
+      check_interval = (cfg.check_interval || 3600) * 1000,
+      modules        = {},
+      Store          = window.localStorage,
+      load_queues    = {},
+      self           = this;
   
   // localStorage support is required
   if (typeof Store == 'undefined') {
     alert('wicked.js Error: Your Browser does not support localStorage.');
     return;
   }
+  
+  var init = function() {
+    
+    // activate autoupdating, if check_interval is set
+    if (check_interval) {
+      // but give it 5 sec before the first check
+      window.setTimeout(self.check_for_updates, 5000);
+    }
+    // 
+    // modules['Wicked'] = Wicked;
+    // code = Wicked.toString();
+    // Store[ [namespace, module].join('_') ] = code;
+    // Store[ [namespace, module, 'crc'].join('_') ] = crc32( code, salt );
+    // Store[ [namespace, module, 'url'].join('_') ] = 
+  };
   
   // load & cache a JS function called »module« located at »url« and
   // run callback passing the module as soon as it is available.
@@ -181,6 +201,30 @@ Wicked = function(cfg) {
       if (typeof callback == 'function') callback(changed);
     });
   };
+  
+  // Check each check_interval for new updates. If there are updated files, do the update immediately. 
+  this.check_for_updates = function() {
+    
+    var now       = function() { return (new Date).getTime(); },
+        store_key = [namespace, 'last_check'].join('_'),
+        _check = function() {
+          self.update_all();
+          Store[ store_key ] = now();
+        };
+    if (! Store[ store_key ]) Store[ store_key ] = now();
+    
+    timeout = Store[ store_key ] - now() + check_interval; 
+    
+    // Make sure to give it at least 5 seconds before the first check.
+    if (timeout < 5000) timeout = 5000;
+    
+    // start initial Timout and subsequent Intervals to check for updates
+    window.setTimeout(function() {
+      _check();
+      window.setInterval(_check, check_interval);
+    }, timeout);
+  };
+  
 
   // spring cleaning!
   this.flush = function(key) {
@@ -279,7 +323,7 @@ Wicked = function(cfg) {
     my_keys = function(nr) { return nr ? keys[nr] : keys; };
     return nr ? keys[nr] : keys;
   };
-
+  
   //###Crc32 (c) 2006 Andrea Ercolino, MIT licensed
   
   // I bow down in front of this piece of code. 
@@ -314,4 +358,7 @@ Wicked = function(cfg) {
   		return crc ^ (-1);
   	};
   })();
+  
+  // Wicked init!
+  init();
 };
