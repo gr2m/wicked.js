@@ -1,5 +1,5 @@
 // wicked.js is a module manager for Javascript. It loads external JavaScript functions (Modules)
-// across domains and caches its code using localStorage for faster future loading.ng.
+// across domains and caches its code using localStorage for faster future loadinging.
 // 
 // The script used to inject miteGyver is wicked.js which is used to load, cache & update
 // miteGyver and also used by miteGyver itself to load assets as needed by the current website.
@@ -11,6 +11,19 @@
 //       var instance = new myWickedFunction({foo: 'bar'});
 //       instance.showSomethingWicked();
 //     })
+// 
+//### Advanced Example
+// 
+//     you can even make wicked.js being part of the module managment as well. Just wrap the script once more:
+// 
+//     wicked = new Wicked;
+//     wicked.get("Wicked","http://example.com/lib/wicked.js", function(Wicked){
+//       var wicked = new Wicked({check_interval: 3600})
+//       wicked.get("myWickedFunction","http://example.com/my_wicked_function.js", function(myWickedFunction){
+//         var instance = new myWickedFunction({foo: 'bar'});
+//         instance.showSomethingWicked();
+//       });
+//     });
 //    
 //### Parameters
 // 
