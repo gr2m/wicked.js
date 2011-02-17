@@ -36,7 +36,7 @@ Wicked = function(cfg) {
   
   // localStorage support is required
   if (typeof Store == 'undefined') {
-    alert('wicked.js Error: Your Browser does not support localStorage.');
+    alert('wicked.js FATAL ERROR: Your Browser does not support localStorage.');
     return;
   }
   
@@ -96,13 +96,13 @@ Wicked = function(cfg) {
       
       // Did something went wrong?
       if (! event.target) {
-        alert('LOAD ERROR: could not load ' + url);
+        self.onerror('LOAD ERROR: could not load ' + url);
         return false;
       }
 
       // Or does the function »module« not exist at »url«?
       if (! find_function(module)) {
-        alert('LOAD ERROR: There is no method '+module+' at ' + url);
+        self.onerror('LOAD ERROR: There is no method '+module+' at ' + url);
         return false;
       }
       
@@ -133,13 +133,13 @@ Wicked = function(cfg) {
       
       // Did something went wrong?
       if (! event.target) {
-        alert('CHECK ERROR: could not check for update at ' + url);
+        self.onerror('CHECK ERROR: could not check for update at ' + url);
         return false;
       }
   
       // Or does the function »module« not exist at »url«?
       if (! find_function(module)) {
-        alert('CHECK ERROR: There is no method '+module+' at ' + url);
+        self.onerror('CHECK ERROR: There is no method '+module+' at ' + url);
         return false;
       }
       
@@ -237,6 +237,10 @@ Wicked = function(cfg) {
       };
     }
   };
+  
+  
+  // error handler – feel free to overwrite
+  this.onerror = function(msg) { alert(msg); };
   
   //### PRIVATE
   
