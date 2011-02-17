@@ -38,6 +38,7 @@
 //   if check_interval is set, modules get updated automatically in background
 
 Wicked = function(cfg) {
+  
   cfg = cfg || {};
   var namespace      = cfg.namespace   || 'wicked',
       salt           = String(cfg.salt || Math.random()),
@@ -141,12 +142,14 @@ Wicked = function(cfg) {
       // Did something went wrong?
       if (! event.target) {
         self.onerror('CHECK ERROR: could not check for update at ' + url);
+        self.flush(module);
         return false;
       }
   
       // Or does the function »module« not exist at »url«?
       if (! find_function(module)) {
         self.onerror('CHECK ERROR: There is no method '+module+' at ' + url);
+        self.flush(module);
         return false;
       }
       
@@ -233,10 +236,11 @@ Wicked = function(cfg) {
   
 
   // spring cleaning!
-  this.flush = function(key) {
+  this.flush = function(module) {
     if (key) {
-      Store.removeItem([namespace,key].join('_'));
-      Store.removeItem([namespace,key,'crc'].join('_'));
+      Store.removeItem([namespace,module].join('_'));
+      Store.removeItem([namespace,module,'crc'].join('_'));
+      Store.removeItem([namespace,module,'url'].join('_'));
     } else {
       for (var i=0; i < my_keys().length; i++) {
         Store.removeItem(my_keys(i));
