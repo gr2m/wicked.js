@@ -56,11 +56,8 @@ Wicked = function(cfg) {
   
   var init = function() {
     
-    // activate autoupdating, if check_interval is set
-    if (check_interval) {
-      // but give it 5 sec before the first check
-      window.setTimeout(self.check_for_updates, 5000);
-    }
+    // activate autoupdating if check_interval is set
+    if (check_interval) self.check_for_updates();
   };
   
   // load & cache a JS function called »module« located at »url« and
