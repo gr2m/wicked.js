@@ -113,10 +113,16 @@ Wicked = function(cfg) {
         return false;
       }
       
-      // Okay, all good. Let's return the module and cache its code for future usage.
-      code = find_function(module).toString();
-      write_to_cache(module, url, code);
-      eval_module(module, code);
+      // avoid adding the script twice
+      if(event.target.parentNode) {
+        // Okay, all good. Let's return the module and cache its code for future usage.
+        code = find_function(module).toString();
+        write_to_cache(module, url, code);
+        eval_module(module, code);
+
+        // cleanup
+        event.target.parentNode.removeChild( event.target ); 
+      }
       callback(modules[module]);
     });
   };
@@ -165,6 +171,9 @@ Wicked = function(cfg) {
         // Oh yes? Then return all that's necessary to update it.
         callback(true, module, url, their_code);
       };
+      
+      // cleanup
+      event.target.parentNode.removeChild( event.target );
     });
   };
   
