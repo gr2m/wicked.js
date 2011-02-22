@@ -248,7 +248,7 @@ Wicked = function(cfg) {
   
   
   // error handler – feel free to overwrite
-  this.onerror = function(msg) { alert(msg); };
+  this.onerror = function(msg) { window.console && window.console.log('wicked.js ERROR: ' + msg); };
   
   //### PRIVATE
   
@@ -261,7 +261,7 @@ Wicked = function(cfg) {
     if (typeof callback != 'function') callback = function() {};
     
     if (! load_queues[url]) {
-      var dequeue_callbacks = function() {
+      var dequeue_callbacks = function(event) {
         var callback;
         while ( callback = load_queues[url].shift() ) {
           callback(event); 
