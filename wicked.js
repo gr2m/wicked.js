@@ -42,7 +42,7 @@ Wicked = function(cfg) {
   cfg = cfg || {};
   var namespace      = cfg.namespace   || 'wicked',
       salt           = String(cfg.salt || Math.random()),
-      check_interval = (cfg.check_interval || 3600) * 1000,
+      check_interval = (cfg.check_interval || 3600),
       modules        = {},
       Store          = window.localStorage,
       self           = this;
@@ -98,8 +98,8 @@ Wicked = function(cfg) {
       return;
     }
 
-    // Okay, this module is new, so let's load it.
-    load(url, function(event) {
+    // Okay, this module is new, so let's load it. Avoid caching.
+    load(url + '?' + asset_id(), function(event) {
       
       // Did something went wrong?
       if (! event.target) {
@@ -220,7 +220,7 @@ Wicked = function(cfg) {
         };
     if (! Store[ store_key ]) Store[ store_key ] = now();
     
-    timeout = Store[ store_key ] - now() + check_interval; 
+    timeout = (Store[ store_key ] - now() + check_interval) * 1000; 
     
     // Make sure to give it at least 5 seconds before the first check.
     if (timeout < 5000) timeout = 5000;
@@ -228,7 +228,7 @@ Wicked = function(cfg) {
     // start initial Timout and subsequent Intervals to check for updates
     window.setTimeout(function() {
       _check();
-      window.setInterval(_check, check_interval);
+      window.setInterval(_check, check_interval * 1000);
     }, timeout);
   };
   
@@ -313,8 +313,8 @@ Wicked = function(cfg) {
   var is_js = function(path) {
     return (/\.js(\?.*)?$/.test(path));
   };
-  var now       = function() { 
-    return (new Date).getTime(); 
+  var now = function() { 
+    return (new Date).getTime() / 1000 >> 0; 
   };
   var asset_id = function() {
     var key = [namespace, 'last_change'].join('_');
