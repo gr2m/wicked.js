@@ -45,7 +45,6 @@ Wicked = function(cfg) {
       check_interval = (cfg.check_interval || 3600) * 1000,
       modules        = {},
       Store          = window.localStorage,
-      load_queues    = {},
       self           = this;
   
   // localStorage support is required
@@ -63,7 +62,10 @@ Wicked = function(cfg) {
   // load & cache a JS function called »module« located at »url« and
   // run callback passing the module as soon as it is available.
   this.get = function(module, url, callback) {
-
+    
+    // let's make sure we load a module at all, and not just a css/js dependency
+    if (is_css(module) || is_js(module)) return load(module + '?' + asset_id(), url);
+    
     // is the module already loaded? Sweet, that was fast.
     if (typeof modules[module] == 'function') {
       callback(modules[module]);
@@ -134,7 +136,7 @@ Wicked = function(cfg) {
     }
     
     // load the script
-    load(url, function(event) {
+    load(url + '?' + Math.random(), function(event) {
       
       // Did something went wrong?
       if (! event.target) {
@@ -211,8 +213,7 @@ Wicked = function(cfg) {
   
   // Check each check_interval for new updates. If there are updated files, do the update immediately. 
   this.check_for_updates = function() {
-    var now       = function() { return (new Date).getTime(); },
-        store_key = [namespace, 'last_check'].join('_'),
+    var store_key = [namespace, 'last_check'].join('_'),
         _check = function() {
           self.update_all();
           Store[ store_key ] = now();
@@ -251,26 +252,73 @@ Wicked = function(cfg) {
   
   //### PRIVATE
   
-  // Adds a script tag to load the external Javascript and run the callback as soon as it's loaded
-  // or in case of an error. It's also smart enough not to add the same JavaScript twice if gets
-  // loaded multiple times while the JavaScript is still transfered asynchronously.
-  var load = function(url, callback) {
+  // Adds a tag to load the external Javascript (or Stylesheet) and run the callback as soon as 
+  // it's loaded or in case of an error. It's also smart enough not to add the same Tag twice 
+  // if gets called multiple times while the loading of the asset is still in progress.
+  var load_queues = {}, load = function(url, callback) {
+    
+    // make me robust
+    if (typeof callback != 'function') callback = function() {};
+    
     if (! load_queues[url]) {
-      load_queues[url] = [];
-      
-      var script = document.createElement('script');
-      script.src = url + '?' + Math.random();
-      script.className = namespace;
-      script.onload = script.onerror = function(event) {
+      var dequeue_callbacks = function() {
         var callback;
         while ( callback = load_queues[url].shift() ) {
           callback(event); 
         }
         delete load_queues[url];
       };
-      document.body.appendChild(script);
+      
+      load_queues[url] = [];
+      
+      switch (true) {
+        case is_js(url):
+          load_js(url, dequeue_callbacks);
+          break;
+        case is_css(url):
+          load_css(url, dequeue_callbacks);
+          break;
+        default:
+          self.onerror('Fatal error: ' + url + 'is neither a js nor a css file.');
+      }
     }
     load_queues[url].push(callback);
+  };
+  
+  var load_js = function(url, callback) {
+    var script = document.createElement('script');
+    script.src = url;
+    script.className = namespace;
+    script.onload = script.onerror = callback;
+    document.body.appendChild(script);
+  };
+  
+  var css_loaded = {}, load_css = function(url, callback) {
+    // css is supposed to get loaded once as long as the url does not change
+    if (css_loaded[url]) callback();
+    css_loaded[url] = true;
+    
+    var link = document.createElement('link');
+    link.href = url;
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.className = namespace;
+    link.onload = link.onerror = callback;
+    document.body.appendChild(link);
+  };
+  
+  var is_css = function(path) {
+    return (/\.css(\?.*)?$/.test(path));
+  };
+  var is_js = function(path) {
+    return (/\.js(\?.*)?$/.test(path));
+  };
+  var now       = function() { 
+    return (new Date).getTime(); 
+  };
+  var asset_id = function() {
+    var key = [namespace, 'last_change'].join('_');
+    return Store[key] || (Store[key] == now());
   };
 
   // try to read the Module from cache. Returns false if the Module is not cached or if a
@@ -300,6 +348,9 @@ Wicked = function(cfg) {
     Store[key]        = data;
     Store[url_key]    = url;
     Store[crc32_key]  = crc32( data, salt);
+
+    // update asset_id
+    Store[ namespace + '_last_change' ] = now();
 
     return true;
   };
