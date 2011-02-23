@@ -9,3 +9,5 @@
 
   wicked.get('http://example.com/multiple_functions.js', function() {...} )
   wicked.get(['http://example.com/module1.js','http://example.com/module2.js'], function() {...} )
+  
+  
