@@ -255,6 +255,11 @@ Wicked = function(cfg) {
     }
   };
   
+  // reset already loaded assets
+  this.reset = function() {
+    css_loaded = {};
+  };
+  
   
   // error handler – feel free to overwrite
   this.onerror = function(msg) { window.console && window.console.log('wicked.js ERROR: ' + msg); };
