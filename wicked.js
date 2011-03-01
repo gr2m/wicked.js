@@ -332,7 +332,7 @@ Wicked = function(cfg) {
   };
   var asset_id = function() {
     var key = [namespace, 'last_change'].join('_');
-    return Store[key] || (Store[key] == now());
+    return Store[key] || (Store[key] = now());
   };
 
   // try to read the Module from cache. Returns false if the Module is not cached or if a
