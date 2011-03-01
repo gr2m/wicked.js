@@ -214,6 +214,9 @@ Wicked = function(cfg) {
   // walk through all cached modules, make the wicked.check and update the ones that have changed  
   // Updates take effect after the next page load.
   this.update_all = function(callback) {
+    // update asset_id
+    Store[ namespace + '_last_change' ] = now();
+    
     this.check_all(function(changed, do_update) {
       if (changed) do_update();
       if (typeof callback == 'function') callback(changed);
