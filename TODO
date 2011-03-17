@@ -1,13 +1,10 @@
-* remove script tags after loading finished.
-
 * add support to load multiple URLs and/or multiple modules at once
   
   wicked.get(['module1','module2'],'http://example.com/multiple_functions.js', function(Module1, Module2)) { ... });
   wicked.get(['module1','module2'],['http://example.com/module1.js','http://example.com/module2.js'], function(Module1, Module2)) { ... });
       
-* add support to just load one or multiple URLs, without module caching
+* add support to load multiple URLs
 
-  wicked.get('http://example.com/multiple_functions.js', function() {...} )
   wicked.get(['http://example.com/module1.js','http://example.com/module2.js'], function() {...} )
   
   

@@ -167,9 +167,13 @@ Wicked = function(cfg) {
         // no? Then return nothing.
         callback(false);
       } else {
-        
         // Oh yes? Then return all that's necessary to update it.
         callback(true, module, url, their_code);
+        
+        // and inform the update subscriptions
+        if (_subscriptions[module]) for (var i=0; i < _subscriptions[module].length; i++) {
+          _subscriptions[module][i]();
+        };
       };
       
       // cleanup
@@ -244,7 +248,13 @@ Wicked = function(cfg) {
     }, timeout);
   };
   
-
+  // subscribe to changes of particular modules if you like
+  var _subscriptions = {};
+  this.subscribe = function(module, func) {
+    if (! _subscriptions[module] ) _subscriptions[module] = [];
+    _subscriptions[module].push(func);
+  };
+  
   // spring cleaning!
   this.flush = function(module) {
     if (module) {
